@@ -19,7 +19,8 @@ If you know `express`_ and/or `Flask`_, you'll feel right at home.
 .. _express: http://expressjs.com/
 .. _Flask: http://flask.pocoo.org/
 
-### Synchronous route
+Synchronous route
+`````````````````
 
 .. code-block:: python
 
@@ -30,7 +31,8 @@ If you know `express`_ and/or `Flask`_, you'll feel right at home.
     def index(request):
         return app.render_template('index.html')
 
-### Async route
+Async route
+```````````
 
 .. code-block:: python
 
