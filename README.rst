@@ -68,6 +68,46 @@ Handlers have several way to send data back to the client:
 * *writing*: handlers can be defined to accept two arguments, ``request`` and
   ``response``. They can then directly write data to the response.
 
+``Induction`` objects
+---------------------
+
+The ``Induction`` constructor accepts the following arguments:
+
+* ``name``: the name for your app.
+
+And the following keyword arguments:
+
+* ``template_folder``: path to the folder from which to load templates.
+  Defaults to ``'templates'`` relatively to the current working directory.
+
+The following methods are available on ``Induction`` instances:
+
+* ``route(path, **conditions)``: registers a route. Meant to be used as a
+  decorator::
+
+      @app.route('/')
+      def foo(request):
+          return jsonify({})
+
+* ``before_request(func)``: registers a function to be called before all
+  request handlers. E.g.::
+
+      @app.before_request
+      def set_some_header(request, response):
+          request.uuid = str(uuid.uuid4())
+          response.add_header('X-Request-ID', request.uuid)
+
+  ``before_request`` functions are called in the order they've been declared.
+
+* ``after_request(func)`` registers a function to be called after all request
+  handlers. Works like ``before_request``.
+
+* ``handle_404(request, [response])``: error handler for HTTP 404 errors.
+
+* ``render_template(template_name_or_list, **context)``: loads the first
+  matching template from ``template_name_or_list`` and renders it using the
+  given context.
+
 Response objects
 ----------------
 

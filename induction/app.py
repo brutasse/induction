@@ -44,11 +44,13 @@ class Induction:
             func(request, response)
 
         match = self._routes.match(request.path)
+        _self = 0
         if match is None:
-            return (yield from self._handle_404(request, response))
-
-        handler = match.pop('_induction_handler')
-        request.kwargs = match
+            handler = self.handle_404
+            _self = 1
+        else:
+            handler = match.pop('_induction_handler')
+        request.kwargs = match or {}
 
         # 2 arities supported in handlers:
         #
@@ -65,11 +67,12 @@ class Induction:
         fn_name = handler.__name__
 
         spec = inspect.getargspec(handler)
-        if len(spec.args) == 1:
+        argc = len(spec.args) - _self
+        if argc == 1:
             need_response = True
-        elif len(spec.args) == 2:
+        elif argc == 2:
             args.append(response)
-        elif len(spec.args) == 3:
+        elif argc == 3:
             args.append(payload)
 
         data = handler(*args)
@@ -101,14 +104,14 @@ class Induction:
                             # body
                             rsp = value
 
-                for name, _ in response.headers:
+                for name, _ in response.headers.items():
                     if name == 'CONTENT-TYPE':
                         break
                 else:
                     response.add_header('Content-Type',
                                         'text/html; charset=utf-8')
 
-                if isinstance(data, (str, bytes, bytearray)):
+                if isinstance(rsp, (str, bytes, bytearray)):
                     response.write(rsp, unchunked=True)
                 else:
                     response.write_eof()
@@ -144,4 +147,8 @@ class Induction:
     def render_template(self, template_name_or_list, **context):
         template = self._jinja_env.get_or_select_template(
             template_name_or_list)
-        return template.render(context).encode()
+        return template.render(context)
+
+    def handle_404(self, request):
+        return (jsonify({'error': 404}), 404,
+                {'Content-Type': 'application/json'})
