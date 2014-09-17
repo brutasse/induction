@@ -51,10 +51,12 @@ class Induction:
         request.kwargs = match
 
         # 2 arities supported in handlers:
+        #
         # - handler(request, response)
         #   Handler can write stuff in response or return data that gets
         #   written to the response (str or bytes, or tuple of (response,
         #   status, headers) or (response, headers))
+        #
         # - handler(request, response, payload)
         #   The payload is passed when the handler needs it.
 
@@ -106,7 +108,7 @@ class Induction:
                     response.add_header('Content-Type',
                                         'text/html; charset=utf-8')
 
-                if isinstance(value, (str, bytes, bytearray)):
+                if isinstance(data, (str, bytes, bytearray)):
                     response.write(rsp, unchunked=True)
                 else:
                     response.write_eof()
