@@ -3,6 +3,7 @@ import sys
 from setuptools import setup, find_packages
 
 install_requires = [
+    'Jinja2',
     'Routes',
 ]
 if sys.version_info < (3, 4):
