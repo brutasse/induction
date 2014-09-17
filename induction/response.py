@@ -37,3 +37,7 @@ class Response(aiohttp.Response):
 
         if close:
             self.write_eof()
+
+    def redirect(self, location, status=302):
+        self.set_status(status)
+        self.add_header('Location', location)

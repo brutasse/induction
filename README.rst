@@ -67,3 +67,24 @@ Handlers have several way to send data back to the client:
 
 * *writing*: handlers can be defined to accept two arguments, ``request`` and
   ``response``. They can then directly write data to the response.
+
+Response objects
+----------------
+
+The following attributes and methods are available on ``Response`` objects:
+
+* ``status``, ``status_line``: the HTTP status code and line for this
+  response.
+
+* ``write(chunk, close=False, unchunked=False)``: writes a chunk of data to
+  the reponse.
+
+  If ``chunk`` is a string, it'll be encoded to bytes.
+
+  If ``close`` is ``True``, ``write_eof()`` is called on the response.
+
+  If ``unchunked`` is ``True`` a ``Content-Length`` header is added and the
+  response will be closed once the chunk is written.
+
+* ``redirect(location, status=302)``: redirects to ``location`` using the
+  given status code.
