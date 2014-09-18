@@ -41,7 +41,9 @@ class Induction:
     def handle_request(self, request, response, payload):
         # Apply request processors
         for func in self._before_request:
-            func(request, response)
+            before = func(request, response)
+            if yields(before):
+                yield from before
 
         match = self._routes.match(request.path)
         _self = 0
@@ -117,7 +119,9 @@ class Induction:
                     response.write_eof()
 
         for func in self._after_request:
-            func(request, response)
+            after = func(request, response)
+            if yields(after):
+                yield from after
 
     def route(self, path, **conditions):
         def wrap(func):
