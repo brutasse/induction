@@ -35,6 +35,7 @@ class Induction:
         self._routes = Mapper(register=False)
         self._before_request = []
         self._after_request = []
+        self._error_handlers = {}
         self._jinja_env = Environment(loader=FileSystemLoader(template_folder))
 
     @asyncio.coroutine
@@ -43,42 +44,63 @@ class Induction:
         for func in self._before_request:
             before = func(request, response)
             if yields(before):
-                yield from before
-
-        match = self._routes.match(request.path)
-        _self = 0
-        if match is None:
-            handler = self.handle_404
-            _self = 1
+                before = yield from before
+            if before is not None:
+                data = before
+                fn_name = func.__name__
+                need_response = True
+                break
         else:
-            handler = match.pop('_induction_handler')
-        request.kwargs = match or {}
+            match = self._routes.match(request.path)
+            _self = 0
+            if match is None:
+                handler = self.handle_404
+                _self = 1
+            else:
+                handler = match.pop('_induction_handler')
+            request.kwargs = match or {}
 
-        # 2 arities supported in handlers:
-        #
-        # - handler(request, response)
-        #   Handler can write stuff in response or return data that gets
-        #   written to the response (str or bytes, or tuple of (response,
-        #   status, headers) or (response, headers))
-        #
-        # - handler(request, response, payload)
-        #   The payload is passed when the handler needs it.
+            # 2 arities supported in handlers:
+            #
+            # - handler(request, response)
+            #   Handler can write stuff in response or return data that gets
+            #   written to the response (str or bytes, or tuple of (response,
+            #   status, headers) or (response, headers))
+            #
+            # - handler(request, response, payload)
+            #   The payload is passed when the handler needs it.
 
-        args = [request]
-        need_response = True
-        fn_name = handler.__name__
+            args = [request]
+            need_response = False
+            fn_name = handler.__name__
 
-        spec = inspect.getargspec(handler)
-        argc = len(spec.args) - _self
-        if argc == 1:
-            need_response = True
-        elif argc == 2:
-            args.append(response)
-        elif argc == 3:
-            args.append(payload)
+            spec = inspect.getargspec(handler)
+            argc = len(spec.args) - _self
+            if argc == 1:
+                need_response = True
+            elif argc >= 2:
+                args.append(response)
+            if argc == 3:
+                args.append(payload)
 
-        data = handler(*args)
+            data = handler(*args)
 
+        try:
+            yield from self.handle_data(data, response, need_response, fn_name)
+        except Exception as e:
+            handler = self._error_handlers.get(type(e))
+            if handler is None:
+                raise
+            data = handler(request, response, e)
+            yield from self.handle_data(data, response, True, handler.__name__)
+
+        for func in self._after_request:
+            after = func(request, response)
+            if yields(after):
+                yield from after
+
+    @asyncio.coroutine
+    def handle_data(self, data, response, need_response, fn_name):
         if yields(data):
             yield from data
             if not response.finished:
@@ -119,11 +141,6 @@ class Induction:
                 else:
                     response.write_eof()
 
-        for func in self._after_request:
-            after = func(request, response)
-            if yields(after):
-                yield from after
-
     def route(self, path, **conditions):
         def wrap(func):
             self._routes.connect(path, _induction_handler=func,
@@ -138,6 +155,12 @@ class Induction:
     def after_request(self, func):
         self._after_request.append(func)
         return func
+
+    def error_handler(self, typ):
+        def wrap(func):
+            self._error_handlers[typ] = func
+            return func
+        return wrap
 
     def run(self, *, host='0.0.0.0', port=8000, loop=None):
         if loop is None:

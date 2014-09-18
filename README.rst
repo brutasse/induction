@@ -99,10 +99,26 @@ The following methods are available on ``Induction`` instances:
 
   ``before_request`` functions are called in the order they've been declared.
 
+  When a ``before_request`` function returns something else than ``None``, all
+  request processing is stopped and the returned data is passed to the
+  response.
+
 * ``after_request(func)`` registers a function to be called after all request
   handlers. Works like ``before_request``.
 
 * ``handle_404(request, [response])``: error handler for HTTP 404 errors.
+
+* ``exception_handler(exc_type)``: registers a function to be called when a
+  request handler raises an exception of type ``exc_type``. Exception handlers
+  take the request, the response and the exception object as argument::
+
+      @app.exception_handler(ValueError):
+      def handle_value_error(request, response, exception):
+          response.add_header("X-Exception", str(exception))
+
+  Note that the response may have been partially sent to the client already.
+  Depending on what your application does, it might not be safe to set headers
+  or even send data to the response.
 
 * ``render_template(template_name_or_list, **context)``: loads the first
   matching template from ``template_name_or_list`` and renders it using the
