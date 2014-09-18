@@ -41,3 +41,7 @@ class Response(aiohttp.Response):
     def redirect(self, location, status=302):
         self.set_status(status)
         self.add_header('Location', location)
+
+    def write_eof(self):
+        self.finished = True
+        return super().write_eof()

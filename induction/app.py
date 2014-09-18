@@ -81,7 +81,8 @@ class Induction:
 
         if yields(data):
             yield from data
-            response.write_eof()
+            if not response.finished:
+                response.write_eof()
         else:
             if need_response and data is None:
                 # when calling handler(request) we expect some data so that
