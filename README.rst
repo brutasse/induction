@@ -15,6 +15,13 @@ Induction is the phenomenon that drives asynchronous motors. Pictured above is
 
 .. _Tesla's induction motor: http://en.wikipedia.org/wiki/Induction_motor
 
+Installation
+------------
+
+::
+
+    pip install induction
+
 Usage examples
 --------------
 
