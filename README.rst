@@ -148,3 +148,10 @@ The following attributes and methods are available on ``Response`` objects:
 
 * ``redirect(location, status=302)``: redirects to ``location`` using the
   given status code.
+
+Releases
+--------
+
+* **0.1** (2014-09-19)
+
+  * Initial release.
