@@ -1,7 +1,5 @@
-import aiohttp
 import asyncio
 import inspect
-import io
 import json
 
 from jinja2 import Environment, FileSystemLoader
@@ -11,22 +9,11 @@ from .encoding import JSONEncoder
 from .protocol import AppServerHttpProtocol
 from .utils import yields
 
-__all__ = ['Induction', 'read_payload', 'jsonify']
+__all__ = ['Induction', 'jsonify']
 
 
 def jsonify(data, cls=JSONEncoder, **kwargs):
     return json.dumps(data, cls=cls, **kwargs)
-
-
-def read_payload(payload):
-    _input = io.BytesIO()
-    try:
-        while True:
-            _input.write((yield from payload.read()))
-    except aiohttp.EofStream:
-        pass
-    _input.seek(0)
-    return _input
 
 
 class Induction:
@@ -60,12 +47,15 @@ class Induction:
                 handler = match.pop('_induction_handler')
             request.kwargs = match or {}
 
-            # 2 arities supported in handlers:
+            # 3 arities supported in handlers:
+            #
+            # - handler(request)
+            #   Handler must return response data or a response tuple.
             #
             # - handler(request, response)
             #   Handler can write stuff in response or return data that gets
             #   written to the response (str or bytes, or tuple of (response,
-            #   status, headers) or (response, headers))
+            #   status, headers) or (response, headers)).
             #
             # - handler(request, response, payload)
             #   The payload is passed when the handler needs it.
