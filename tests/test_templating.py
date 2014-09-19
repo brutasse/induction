@@ -9,10 +9,10 @@ app = Induction(__name__, template_folder='tests/templates')
 class TemplatingTests(TestCase):
     def test_render_template(self):
         rendered = app.render_template('index.html', test=True)
-        self.assertEqual(rendered, b'Test!')
+        self.assertEqual(rendered, 'Test!')
 
         rendered = app.render_template('index.html', test=False)
-        self.assertEqual(rendered, b'Nope!')
+        self.assertEqual(rendered, 'Nope!')
 
     def test_template_does_not_exist(self):
         with self.assertRaises(TemplateNotFound):
@@ -20,4 +20,4 @@ class TemplatingTests(TestCase):
 
     def test_select_template(self):
         rendered = app.render_template(['foo.html', 'index.html'], test=False)
-        self.assertEqual(rendered, b'Nope!')
+        self.assertEqual(rendered, 'Nope!')
