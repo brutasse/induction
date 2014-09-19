@@ -7,7 +7,7 @@ Induction
 
 A simple web framework based on asyncio.
 
-.. image:: https://github.com/brutasse/induction/blob/master/tesla.jpg
+.. image:: https://raw.githubusercontent.com/brutasse/induction/master/tesla.jpg
    :alt: Tesla's induction motor
 
 Induction is the phenomenon that drives asynchronous motors. Pictured above is
