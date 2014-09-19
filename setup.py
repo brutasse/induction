@@ -15,7 +15,7 @@ setup(
     version='0.1',
     author='Bruno Renié',
     author_email='bruno@renie.fr',
-    description='Simple asyncio-based web framework',
+    description='A simple web framework based on asyncio.',
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
