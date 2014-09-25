@@ -7,7 +7,7 @@ from routes import Mapper
 
 from .encoding import JSONEncoder
 from .protocol import AppServerHttpProtocol
-from .utils import yields
+from .utils import yields, error
 
 __all__ = ['Induction', 'jsonify']
 
@@ -80,9 +80,18 @@ class Induction:
         except Exception as e:
             handler = self._error_handlers.get(type(e))
             if handler is None:
-                raise
+                handler = self._error_handlers.get(None)
+                if handler is None:
+                    raise
             data = handler(request, response, e)
-            yield from self.handle_data(data, response, True, handler.__name__)
+            if data is None:
+                data, headers = error(500)
+                response.set_status(500)
+                response.add_headers(*headers.items())
+                response.write(data)
+            else:
+                yield from self.handle_data(data, response, True,
+                                            handler.__name__)
 
         for func in self._after_request:
             after = func(request, response)
@@ -168,5 +177,5 @@ class Induction:
         return template.render(context)
 
     def handle_404(self, request):
-        return (jsonify({'error': 404}), 404,
-                {'Content-Type': 'application/json'})
+        data, headers = error(404)
+        return data, headers, 404

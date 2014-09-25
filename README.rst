@@ -119,17 +119,26 @@ The following methods are available on ``Induction`` instances:
 
 * ``handle_404(request, [response])``: error handler for HTTP 404 errors.
 
-* ``exception_handler(exc_type)``: registers a function to be called when a
+* ``error_handler(exc_type)``: registers a function to be called when a
   request handler raises an exception of type ``exc_type``. Exception handlers
   take the request, the response and the exception object as argument::
 
-      @app.exception_handler(ValueError):
+      @app.error_handler(ValueError):
       def handle_value_error(request, response, exception):
           response.add_header("X-Exception", str(exception))
 
   Note that the response may have been partially sent to the client already.
   Depending on what your application does, it might not be safe to set headers
   or even send data to the response.
+
+  Setting ``exc_type`` to ``None`` lets you register a catch-all error handler
+  that will process all unhandled exceptions::
+
+      @app.error_handler(None):
+      def handle_exception(request, response, exception):
+          # Send exception to Sentry
+          client = raven.Client()
+          client.captureException()
 
 * ``render_template(template_name_or_list, **context)``: loads the first
   matching template from ``template_name_or_list`` and renders it using the
@@ -158,6 +167,12 @@ The following attributes and methods are available on ``Response`` objects:
 
 Releases
 --------
+
+* **0.2** (2014-09-25)
+
+  * 404 error returns HTML by default.
+
+  * Ability to set a catch-all error handler, e.g. for Sentry handling.
 
 * **0.1** (2014-09-19)
 

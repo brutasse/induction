@@ -13,7 +13,7 @@ if sys.version_info < (3, 4):
 
 setup(
     name='induction',
-    version='0.1',
+    version='0.2',
     author='Bruno Renié',
     author_email='bruno@renie.fr',
     description='A simple web framework based on asyncio.',
