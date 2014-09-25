@@ -47,12 +47,12 @@ Async route
 
 .. code-block:: python
 
-    from asyncio import coroutine
+    import asyncio
     from induction import Induction
     app = Induction(__name__)
 
     @app.route('/slow'):
-    @coroutine
+    @asyncio.coroutine
     def slow(request, response):
         yield from asyncio.sleep(10)
         response.write('Hello, world!')
