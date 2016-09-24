@@ -63,7 +63,7 @@ Handlers
 Handlers are decorated with ``@app.route(url_pattern)``. Routes are managed by
 the `Routes`_ library.
 
-.. _Routes: https://routes.readthedocs.org/en/latest/
+.. _Routes: https://routes.readthedocs.io/en/latest/
 
 Handlers have several way to send data back to the client:
 
